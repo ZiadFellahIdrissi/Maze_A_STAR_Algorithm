@@ -14,7 +14,7 @@ movement = [
     [0, 1]    # right
 ]
 start = (0, 0)
-end = (19, 29)
+end = (19, 39)
 
 
 def astar():
@@ -113,7 +113,7 @@ def mouse_fn(btn, row, col):
             maze[row][col] = 0
         else:
             b[row][col] = 'obstacle'
-            maze[row][col] = 1
+            maze[row][col] = 2
 
 
 def setup(w, h):
@@ -144,7 +144,7 @@ def setup(w, h):
 
 if __name__ == "__main__":
 
-    b = setup(20, 30)
+    b = setup(20, 42)
     b.title = "Maze"
     b.margin = 1
     b.cell_size = 30
