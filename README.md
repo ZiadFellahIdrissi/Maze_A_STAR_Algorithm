@@ -1,6 +1,6 @@
 # Maze using A* search algorithm
 This is a simple maze environment to find a path starting at the start point and ending using `A* search algorithm`. 
-You can either prepare one by yourself or let the computer create one for you.
+the computer create one for you.
 A map will be represented by a 2D-map structure .
 
 ## Installation
