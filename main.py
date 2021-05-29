@@ -1,81 +1,52 @@
 from game2dboard import Board
-import math as ma
-from tqdm import tqdm
-# from node import Node
+import numpy as np
+from node import Node
+
+start_node = None
+end_node = None
+maze = []
+open_list = []
+closed_list = []
+movement = [
+    [-1, 0],  # up
+    [0, -1],  # left
+    [1, 0],   # down
+    [0, 1]    # right
+]
+start = (0, 0)
+end = (2, 12)
 
 
-class Node():
-    """Une classe de noeuds"""
+def astar():
 
-    def __init__(self, parent=None, position=None):
-        self.parent = parent
-        self.position = position
-
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __eq__(self, other):
-        return self.position == other.position
-
-
-def astar(maze, start, end):
-
-    # Création d'un nœud de début et de fin
-    start_node = Node(None, start)
-    start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
-
-    # nitialiser les deux listes
-    open_list = []
-    closed_list = []  # liste des noeuds qui sont déjà traité
-
-    # Ajouter le nœud de départ
-    open_list.append(start_node)
-    outer_iteration = 0
-    max_iteration = (len(maze) // 2) ** 10
-
-    # Loop until you find the end
-    # pbar = tqdm(total=len(open_list))
-    while len(open_list) > 0:
-        # pbar.update(1)
-
+    # while len(open_list) > 0:
+    if len(open_list) > 0:
         # Get the current node
         current_node = open_list[0]
-        outer_iteration += 1
         current_index = 0
         for index, item in enumerate(open_list):
             if item.f < current_node.f:
                 current_node = item
                 current_index = index
 
-        if outer_iteration > max_iteration:
-            print(outer_iteration)
-            return [(0, 0)]
-
         # Pop current off open list, add to closed list
         open_list.pop(current_index)
         closed_list.append(current_node)
 
-        # Found the goal
-        if current_node == end_node:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
-            return path[::-1]  # Return reversed path
+        current = current_node
+        path = []
+        while current is not None:
+            path.append(current.position)
+            current = current.parent
+        path = path[::-1]
+  
 
-        movement = [
-            [-1, 0],  # up
-            [0, -1],  # left
-            [1, 0],   # down
-            [0, 1]    # right
-        ]
+        if current_node == end_node:
+            b.stop_timer()
+            b.print("done")  # Return reversed path
+
         # Generate children
         children = []
-        # Adjacent squares
         for new_position in movement:
 
             # Get node position
@@ -87,7 +58,7 @@ def astar(maze, start, end):
                 continue
 
             # Make sure walkable terrain
-            if maze[node_position[0]][node_position[1]] != 0:
+            if maze[node_position[0]][node_position[1]] != 0 and maze[node_position[0]][node_position[1]] != 1:
                 continue
 
             # Create new node
@@ -116,14 +87,23 @@ def astar(maze, start, end):
             # Add the child to the open list
             open_list.append(child)
 
-    # pbar.close()
+        for i in open_list:
+            b[i.position[0]][i.position[1]] = "open"
+
+        for i in closed_list:
+            b[i.position[0]][i.position[1]] = "close"
+        
+        for i in path:
+            b[i[0]][i[1]] = "body"
+
+    else:
+        b.stop_timer()
+        b.print("sorry noo way")
 
 
 def fnkbd(key):
     if key == "s":
-        draw_path()
-    if key == "a":
-        setup()
+        b.start_timer(80)
 
 
 def mouse_fn(btn, row, col):
@@ -136,48 +116,42 @@ def mouse_fn(btn, row, col):
             maze[row][col] = 1
 
 
-def setup():
-    width = len(maze)
-    height = len(maze[0])
-    b = Board(width, height)
+def setup(w, h):
+    global start_node, end_node, open_list, maze
+
+    # Création d'un nœud de Maze
+    maze = np.random.randint(3, size=(w, h))
+    maze[start[0]][start[1]] = 0
+    maze[end[0]][end[1]] = 0
+
+    b = Board(w, h)
     b[start[0]][start[1]] = 'start'
     b[end[0]][end[1]] = 'end'
-    for i in range(width):
-        for j in range(height):
-            if maze[i][j]:
+    for i in range(w):
+        for j in range(h):
+            if maze[i][j] !=0 and maze[i][j] !=1:
                 b[i][j] = 'obstacle'
+
+    # Création d'un nœud de début et de fin
+    start_node = Node(None, start)
+    start_node.g = start_node.h = start_node.f = 0
+    end_node = Node(None, end)
+    end_node.g = end_node.h = end_node.f = 0
+
+    open_list.append(start_node)
     return b
-
-
-def draw_path():
-    path = astar(maze, start, end)
-    if path == None:
-        b.print("N'a pas de chemin")
-        return
-    for i in path[1:-1]:
-        b[i[0]][i[1]] = "body"
 
 
 if __name__ == "__main__":
 
-    maze = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
-            [0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1],
-            [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-            [1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0],
-            [0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1],
-            [0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]]
-    start = (0, 0)
-    end = (4,0)
-
-    b = setup()
+    b = setup(15, 30)
     b.title = "Maze"
     b.margin = 1
-    b.cell_size = 50
+    b.cell_size = 30
     b.cell_color = "bisque"
     b.on_key_press = fnkbd
     b.on_mouse_click = mouse_fn
+    b.on_timer = astar
     b.create_output(background_color="wheat4", color="white")
     b.print("cliquer sur 'S' pour savoir le chemin")
     b.show()
