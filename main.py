@@ -14,7 +14,7 @@ movement = [
     [0, 1]    # right
 ]
 start = (0, 0)
-end = (2, 12)
+end = (19, 29)
 
 
 def astar():
@@ -76,8 +76,8 @@ def astar():
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
-            child.h = abs(child.position[0] - end_node.position[0]) + \
-                abs(child.position[1] - end_node.position[1])
+            child.h = ((child.position[0] - end_node.position[0])**2) + \
+                ((child.position[1] - end_node.position[1])**2)
             child.f = child.g + child.h
 
             # Child is already in the open list
@@ -144,7 +144,7 @@ def setup(w, h):
 
 if __name__ == "__main__":
 
-    b = setup(15, 30)
+    b = setup(20, 30)
     b.title = "Maze"
     b.margin = 1
     b.cell_size = 30
